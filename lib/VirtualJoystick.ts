@@ -18,6 +18,7 @@ export class VirtualJoystick {
     public baseTranslate: string;
     public iD: number | undefined;
     public realForce: number;
+    public keysDown: Record<number, boolean> = {};
 
     constructor(config: number[][], container: HTMLElement, fixed: boolean, dpadMode: boolean, sleepOpacity: number, sleepTimer: number) {
         this.domElement = document.createElement("div"),
@@ -164,42 +165,42 @@ export class VirtualJoystick {
         }
     }
 
-    private left() {
-        return this.difX < -this.minMovementMargin && this.cS(this.difX, this.difY)
+    public left(): boolean {
+        return this.difX < -this.minMovementMargin && this.cS(this.difX, this.difY);
     }
 
-    private right() {
-        return this.difX > this.minMovementMargin && this.cS(this.difX, this.difY)
+    public right(): boolean {
+        return this.difX > this.minMovementMargin && this.cS(this.difX, this.difY);
     }
 
-    private up() {
-        return this.difY < -this.minMovementMargin && this.cS(this.difY, this.difX)
+    public up(): boolean {
+        return this.difY < -this.minMovementMargin && this.cS(this.difY, this.difX);
     }
 
-    private down() {
-        return this.difY > this.minMovementMargin && this.cS(this.difY, this.difX)
+    public down(): boolean {
+        return this.difY > this.minMovementMargin && this.cS(this.difY, this.difX);
     }
 
-    private angle() {
-        return Math.atan2(this.difY, this.difX)
+    private angle(): number {
+        return Math.atan2(this.difY, this.difX);
     }
 
-    private normal() {
+    private normal(): {x, y} {
         return {
             x: this.difX / this.sQ() || 0,
             y: this.difY / this.sQ() || 0
-        }
+        };
     }
 
-    private force() {
-        return Math.min(1, this.sQ() / this.radius)
+    private force(): number {
+        return Math.min(1, this.sQ() / this.radius);
     }
 
-    private cS(t, i) {
-        return Math.abs(i) < 2 * Math.abs(t)
+    private cS(t: number, i: number): boolean {
+        return Math.abs(i) < 2 * Math.abs(t);
     }
 
-    private sQ() {
-        return Math.sqrt(this.difX * this.difX + this.difY * this.difY)
+    private sQ(): number {
+        return Math.sqrt(this.difX * this.difX + this.difY * this.difY);
     }
 }

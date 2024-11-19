@@ -2,26 +2,25 @@ import { CharMap } from "./CharMap";
 
 
 export class VirtualButtons {
-    public settings;
+    public settings = {
+        buttons: [],
+        startX: 150,
+        startY: 150,
+        numColumns: 2,
+        buttonColumnYSpread: 10,
+        buttonSize: 60,
+        buttonMargin: 15,
+        buttonColor: "white",
+        lineThickness: 2,
+        sleepOpacity: .5,
+        sleepTimer: 500
+    };
     public listener;
     public targetElement: HTMLElement
     public domElement: HTMLDivElement;
     public gridElement: HTMLDivElement;
 
     constructor(targetElement: HTMLElement, listener, config: {}) {
-        this.settings = {
-            buttons: [],
-            startX: 150,
-            startY: 150,
-            numColumns: 2,
-            buttonColumnYSpread: 10,
-            buttonSize: 60,
-            buttonMargin: 15,
-            buttonColor: "white",
-            lineThickness: 2,
-            sleepOpacity: .5,
-            sleepTimer: 500
-        },
         this.listener = listener,
         this.settings = Object.assign({}, this.settings, config),
         this.targetElement = targetElement,
@@ -32,7 +31,7 @@ export class VirtualButtons {
         var o = 0;
         this.domElement = document.createElement("div"),
         this.domElement.style.position = "absolute",
-        this.settings.sleepTimer && (this.domElement.style.opacity = this.settings.sleepOpacity),
+        this.settings.sleepTimer && (this.domElement.style.opacity = String(this.settings.sleepOpacity)),
         this.gridElement = document.createElement("div"),
         this.gridElement.style.position = "absolute",
         this.gridElement.style.left = "0",
@@ -105,7 +104,7 @@ export class VirtualButtons {
                 s.style.filter = "unset",
                 event.preventDefault(),
                 this.settings.sleepTimer && (this.domElement.style.transition = "opacity " + (this.settings.sleepTimer / 1e3).toFixed(3) + "s ease-in .3s",
-                this.domElement.style.opacity = this.settings.sleepOpacity)
+                this.domElement.style.opacity = String(this.settings.sleepOpacity))
             };
             s.addEventListener("mousedown", r),
             s.addEventListener("touchstart", r),

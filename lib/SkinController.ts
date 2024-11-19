@@ -1,5 +1,6 @@
 import { CharMap } from "./CharMap";
 import { OverlayController } from "./OverlayController";
+import { VirtualJoystick } from "./VirtualJoystick";
 
 function p(t, i) {
     if (Array.isArray(t))
@@ -42,7 +43,6 @@ function f(t: HTMLCollection): HTMLElement[] {
 
 export class SkinController {
 
-    public target: OverlayController;
     public joystick;
     public buttons: HTMLImageElement[] = [];
     public sprites = {};
@@ -51,21 +51,20 @@ export class SkinController {
     public secondJoystickElement: HTMLDivElement;
     public buttonsElement: HTMLDivElement;
     public buttonsGridElement: HTMLDivElement;
-    public joystickStick;
-    public joystickShadow;
-    public secondJoystickStick;
-    public secondJoystickShadow;
-    public dpad;
-    public secondDpad;
+    public joystickStick: HTMLImageElement;
+    public joystickShadow: HTMLImageElement;
+    public secondJoystickStick: HTMLImageElement;
+    public secondJoystickShadow: HTMLImageElement;
+    public dpad: HTMLImageElement;
+    public secondDpad: HTMLImageElement;
     public buttonBlacks: HTMLImageElement[] = [];
     public buttonWhites: HTMLImageElement[] = [];
     public spriteScale = parseFloat((new URLSearchParams(window.location.search)).get("uiscale") || "1");
 
-    constructor() {}
-
-    public setTarget(target: OverlayController): void {
-        this.target = target,
-        this.target.domElement.style.visibility = "hidden";
+    constructor(
+        public readonly controller: OverlayController
+    ) {
+        this.controller.domElement.style.visibility = "hidden";
     }
 
     public load(e): void {
@@ -173,10 +172,9 @@ export class SkinController {
     }
 
     public placeSprites() {
-        var r = this;
-        if (this.target) {
-            if (this.joystickElement = this.target.virtualJoystick.domElement,
-            this.target.settings.dpad) {
+        if (this.controller) {
+            if (this.joystickElement = this.controller.virtualJoystick.domElement,
+            this.controller.settings.dpad) {
                 this.dpad = this.joystickElement.appendChild(this.createImage(this.sprites["dpad.png"])),
                 this.joystickElement.querySelector("#vjs_dpad").querySelector("svg").style.opacity = "0";
                 var t = this.joystickElement.appendChild(this.createImage(this.sprites["_black_dpad.png"]));
@@ -195,7 +193,7 @@ export class SkinController {
                 this.joystickShadow = this.joystickElement.appendChild(this.createImage(this.sprites["stick_shadow.png"]));
                 this.joystickElement.appendChild(this.createImage(this.sprites["stick_bottom.png"]));
                 this.joystickStick = this.joystickElement.appendChild(this.createImage(this.sprites["stick.png"])),
-                this.joystickStick.style.zIndex = 997;
+                this.joystickStick.style.zIndex = "997";
                 var e = this.joystickElement.appendChild(this.createImage(this.sprites["_black_stick.png"]));
                 e.style.opacity = "0",
                 e.classList.add("black"),
@@ -205,9 +203,9 @@ export class SkinController {
                 s.classList.add("white"),
                 s.style.zIndex = "998"
             }
-            if (this.target.settings.secondJoystickEnabled)
-                if (this.secondJoystickElement = this.target.secondVirtualJoystick.domElement,
-                this.target.settings.secondDpad) {
+            if (this.controller.settings.secondJoystickEnabled)
+                if (this.secondJoystickElement = this.controller.secondVirtualJoystick.domElement,
+                this.controller.settings.secondDpad) {
                     this.secondDpad = this.secondJoystickElement.appendChild(this.createImage(this.sprites["dpad.png"])),
                     this.secondJoystickElement.querySelector("#vjs_dpad").querySelector("svg").style.opacity = "0";
                     var n = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_black_dpad.png"]));
@@ -226,7 +224,7 @@ export class SkinController {
                     this.secondJoystickShadow = this.secondJoystickElement.appendChild(this.createImage(this.sprites["stick_shadow.png"]));
                     this.secondJoystickElement.appendChild(this.createImage(this.sprites["stick_bottom.png"]));
                     this.secondJoystickStick = this.secondJoystickElement.appendChild(this.createImage(this.sprites["stick.png"])),
-                    this.secondJoystickStick.style.zIndex = 997;
+                    this.secondJoystickStick.style.zIndex = "997";
                     var o = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_black_stick.png"]));
                     o.style.opacity = "0",
                     o.classList.add("black"),
@@ -236,49 +234,52 @@ export class SkinController {
                     h.classList.add("white"),
                     h.style.zIndex = "998"
                 }
-            this.buttonsElement = this.target.overlayButtons.domElement,
-            this.buttonsGridElement = this.target.overlayButtons.gridElement;
+            this.buttonsElement = this.controller.overlayButtons.domElement,
+            this.buttonsGridElement = this.controller.overlayButtons.gridElement;
             var l = 1 === this.buttonsGridElement.children.length ? "big" : "small";
-            f(this.buttonsGridElement.children).forEach(function(t) {
-                t.style.opacity = "0";
-                var i = r.createImage(r.sprites["_white_" + l + ".png"]);
-                r.buttonsElement.prepend(i),
-                i.style.opacity = "0",
-                i.classList.add("white"),
-                i.style.marginTop = "-2px",
-                r.buttonWhites.push(i);
-                var e = r.createImage(r.sprites["_black_" + l + ".png"]);
-                r.buttonsElement.prepend(e),
-                e.style.opacity = "0",
-                e.classList.add("black"),
-                e.style.marginTop = "-2px",
-                r.buttonBlacks.push(e);
-                var s = r.createImage(r.sprites[l + ".png"]);
-                s.style.transition = "opacity 0.458s",
-                r.buttonsElement.prepend(s),
-                r.buttons.push(s)
+            f(this.buttonsGridElement.children).forEach((child) => {
+                child.style.opacity = "0";
+
+                const white = this.createImage(this.sprites["_white_" + l + ".png"]);
+                this.buttonsElement.prepend(white);
+                white.style.opacity = "0";
+                white.classList.add("white");
+                white.style.marginTop = "-2px";
+                this.buttonWhites.push(white);
+
+                const black = this.createImage(this.sprites["_black_" + l + ".png"]);
+                this.buttonsElement.prepend(black);
+                black.style.opacity = "0";
+                black.classList.add("black");
+                black.style.marginTop = "-2px";
+                this.buttonBlacks.push(black);
+                
+                const sprite = this.createImage(this.sprites[l + ".png"]);
+                sprite.style.transition = "opacity 0.458s";
+                this.buttonsElement.prepend(sprite);
+                this.buttons.push(sprite);
             }),
-            this.target.settings.gameplayEnable && this.target.setUIVisibility(!1),
-            this.resize(),
+            this.controller.settings.gameplayEnable && this.controller.setUIVisibility(false);
+            this.resize();
             window.addEventListener("resize", this.resize.bind(this)),
-            document.addEventListener("keydown", function(t) {
-                r.handleKeyDown(t, !0)
-            }),
-            document.addEventListener("keyup", function(t) {
-                r.handleKeyDown(t, !1)
-            }),
-            this.target.domElement.style.visibility = "visible",
-            this.active = !0
+            document.addEventListener("keydown", (event: KeyboardEvent) => {
+                this.handleKeyDown(event, true)
+            });
+            document.addEventListener("keyup", (event: KeyboardEvent) => {
+                this.handleKeyDown(event, false)
+            });
+            this.controller.domElement.style.visibility = "visible";
+            this.active = true;
         }
     }
 
-    public handleKeyDown(t, i): void {
-        var e = this.target.overlayButtons.settings.buttons;
-        if (parseFloat(this.target.domElement.style.opacity) > this.target.settings.offOpacity)
-            for (var s = 1 === this.buttonsGridElement.children.length ? "big" : "small", r = 0; r < e.length; r++) {
-                var n = e[r].toUpperCase()
+    public handleKeyDown(event: KeyboardEvent, isDown: boolean): void {
+        const buttons = this.controller.overlayButtons.settings.buttons;
+        if (parseFloat(this.controller.domElement.style.opacity) > this.controller.settings.offOpacity)
+            for (var s = 1 === this.buttonsGridElement.children.length ? "big" : "small", r = 0; r < buttons.length; r++) {
+                var n = buttons[r].toUpperCase()
                   , a = CharMap[n] || n.charCodeAt(0);
-                t.keyCode === a && (this.buttons[r].src = i ? this.sprites[s + "_down.png"] : this.sprites[s + ".png"])
+                event.keyCode === a && (this.buttons[r].src = isDown ? this.sprites[s + "_down.png"] : this.sprites[s + ".png"])
             }
         else
             window.navigator && window.navigator.vibrate && window.navigator.vibrate(0)
@@ -311,36 +312,36 @@ export class SkinController {
         i
     }
 
-    public updateJoystick(t, i, e, s) {
-        var r = t.difX
-            , n = t.difY
-            , a = t.radius
-            , o = Math.sqrt(n * n + r * r);
-        if (i) {
-            if (this.dpad.src = this.sprites["dpad.png"],
-            .5 * a < o) {
-                var h = Math.atan2(n, r) + Math.PI / 2
-                    , l = 2 * Math.PI / 8
-                    , f = Math.round(h / l);
-                f < 0 && (f = 8 + f),
-                f = Math.abs(f),
-                this.dpad.src = this.sprites["dpad_" + f + ".png"]
+    public updateJoystick(joystickStick: VirtualJoystick, dpad: HTMLImageElement, stick, shadow) {
+        let difX = joystickStick.difX;
+        let difY = joystickStick.difY;
+        const radius = joystickStick.radius;
+        const length = Math.sqrt(difY * difY + difX * difX);
+        if (dpad) {
+            dpad.src = this.sprites["dpad.png"];
+            if (0.5 * radius < length) {
+                const h = Math.atan2(difY, difX) + Math.PI / 2;
+                const l = 2 * Math.PI / 8;
+                let f = Math.round(h / l);
+                f < 0 && (f = 8 + f);
+                f = Math.abs(f);
+                dpad.src = this.sprites["dpad_" + f + ".png"]
             }
         } else {
-            if (a < o) {
-                var u = Math.atan2(n, r);
-                r = a * Math.cos(u),
-                n = a * Math.sin(u)
+            if (radius < length) {
+                var u = Math.atan2(difY, difX);
+                difX = radius * Math.cos(u);
+                difY = radius * Math.sin(u);
             }
-            e.style.left = r + "px",
-            e.style.top = n + "px",
-            s.style.left = r + "px",
-            s.style.top = parseInt(n, 10) + 10 + "px"
+            stick.style.left = difX + "px";
+            stick.style.top = difY + "px";
+            shadow.style.left = difX + "px";
+            shadow.style.top = difY + 10 + "px";
         }
     }
 
     public update(): void {
-        this.active && (this.updateJoystick(this.target.virtualJoystick, this.target.settings.dpad, this.joystickStick, this.joystickShadow),
-        this.target.settings.secondJoystickEnabled && this.updateJoystick(this.target.secondVirtualJoystick, this.target.settings.secondDpad, this.secondJoystickStick, this.secondJoystickShadow))
+        this.active && (this.updateJoystick(this.controller.virtualJoystick, this.dpad, this.joystickStick, this.joystickShadow),
+        this.controller.settings.secondJoystickEnabled && this.updateJoystick(this.controller.secondVirtualJoystick, this.secondDpad, this.secondJoystickStick, this.secondJoystickShadow))
     }
 }
