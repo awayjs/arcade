@@ -2,7 +2,7 @@ export class VirtualJoystick {
 
     public domElement: HTMLDivElement;
     public base: SVGSVGElement;
-    public dpadMode: boolean;
+    public padMode: string;
     public pad: SVGSVGElement;
     public startX: number = 0;
     public startY: number = 0;
@@ -20,13 +20,13 @@ export class VirtualJoystick {
     public realForce: number;
     public keysDown: Record<number, boolean> = {};
 
-    constructor(config: number[][], container: HTMLElement, fixed: boolean, dpadMode: boolean, sleepOpacity: number, sleepTimer: number) {
+    constructor(config: number[][], container: HTMLElement, fixed: boolean, padMode: string, sleepOpacity: number, sleepTimer: number) {
         this.domElement = document.createElement("div"),
-        this.base = dpadMode ? this.buildDpad(this.domElement, config[0]) : this.buildJstick(this.domElement, config[0], !0),
-        this.dpadMode = dpadMode,
+        this.base = padMode ? this.buildDpad(this.domElement, config[0]) : this.buildJstick(this.domElement, config[0], !0),
+        this.padMode = padMode,
         this.pad = this.buildJstick(this.domElement, config[1], !1),
         this.pad.style.pointerEvents = "none",
-        dpadMode && (this.pad.style.opacity = "0"),
+        padMode && (this.pad.style.opacity = "0"),
         container.appendChild(this.domElement),
         this.makeAbsolute(this.domElement, "50%"),
         this.makeAbsolute(this.base, "0%", !0),
@@ -42,7 +42,7 @@ export class VirtualJoystick {
         window.addEventListener("resize", (event) => {
             this.boundingRect = this.base.getBoundingClientRect()
         }),
-        this.minMovementMargin = dpadMode ? this.radius / 2 : this.radius / 5,
+        this.minMovementMargin = padMode ? this.radius / 2 : this.radius / 5,
         this.baseTranslate = "translate(-50%, -50%)"
 
     }
@@ -139,7 +139,7 @@ export class VirtualJoystick {
             this.iD = undefined);
         this.difX = 0,
         this.difY = 0,
-        this.dpadMode && (this.base.style.transform = "" + this.baseTranslate),
+        this.padMode && (this.base.style.transform = "" + this.baseTranslate),
         event.preventDefault()
     }
 
@@ -157,7 +157,7 @@ export class VirtualJoystick {
             this.difY = this.radius * Math.sin(r)),
             this.pad.style.top = this.difY + "px",
             this.pad.style.left = this.difX + "px",
-            this.dpadMode) {
+            this.padMode) {
                 var n = "perspective(300px)";
                 this.left() ? this.base.style.transform = this.baseTranslate + " " + n + " rotateY(-10deg)" : this.right() ? this.base.style.transform = this.baseTranslate + " " + n + " rotateY(10deg)" : this.up() ? this.base.style.transform = this.baseTranslate + " " + n + " rotateX(10deg)" : this.down() ? this.base.style.transform = this.baseTranslate + " " + n + " rotateX(-10deg)" : this.base.style.transform = "" + this.baseTranslate
             }

@@ -21,8 +21,8 @@ export class OverlayController {
     public settings = {
         joystickEnabled: true,
         secondJoystickEnabled: false,
-        dpad: false,
-        secondDpad: false,
+        padMode: undefined,
+        secondPadMode: undefined,
         overlayButtonsEnabled: true,
         keyBindings: {
             left: undefined,
@@ -76,8 +76,8 @@ export class OverlayController {
             colors,
             buttons, 
             lineThickness,
-            dpad,
-            secondDpad,
+            padMode,
+            secondPadMode,
             defaultOpacity,
             sleepOpacity,
             sleepTimer
@@ -130,7 +130,7 @@ export class OverlayController {
                 [[Math.round(joystickSize), lineThickness], [Math.round(.6 * joystickSize), lineThickness]],
                 this.domElement,
                 true,
-                dpad,
+                padMode,
                 sleepOpacity,
                 sleepTimer
             );
@@ -147,7 +147,7 @@ export class OverlayController {
                 [[Math.round(joystickSize), lineThickness], [Math.round(.6 * joystickSize), lineThickness]],
                 this.domElement,
                 true,
-                dpad,
+                secondPadMode,
                 sleepOpacity,
                 sleepTimer
             );

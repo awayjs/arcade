@@ -1,6 +1,13 @@
 import { CharMap } from "./CharMap";
+import { PadMode } from "./PadMode";
 import { OverlayController } from "./OverlayController";
 import { VirtualJoystick } from "./VirtualJoystick";
+
+const padConfig = {
+    [PadMode.DPAD]: {offset: 0, sprites: 8},
+    [PadMode.VPAD]: {offset: 0, sprites: 2},
+    [PadMode.HPAD]: {offset: Math.PI/4, sprites: 2}
+}
 
 function p(t, i) {
     if (Array.isArray(t))
@@ -55,8 +62,8 @@ export class SkinController {
     public joystickShadow: HTMLImageElement;
     public secondJoystickStick: HTMLImageElement;
     public secondJoystickShadow: HTMLImageElement;
-    public dpad: HTMLImageElement;
-    public secondDpad: HTMLImageElement;
+    public pad: HTMLImageElement;
+    public secondPad: HTMLImageElement;
     public buttonBlacks: HTMLImageElement[] = [];
     public buttonWhites: HTMLImageElement[] = [];
     public spriteScale = parseFloat((new URLSearchParams(window.location.search)).get("uiscale") || "1");
@@ -173,15 +180,20 @@ export class SkinController {
 
     public placeSprites() {
         if (this.controller) {
-            if (this.joystickElement = this.controller.virtualJoystick.domElement,
-            this.controller.settings.dpad) {
-                this.dpad = this.joystickElement.appendChild(this.createImage(this.sprites["dpad.png"])),
+            const {
+                joystickEnabled,
+                secondJoystickEnabled,
+                padMode,
+                secondPadMode
+            } = this.controller.settings;
+            if (this.joystickElement = this.controller.virtualJoystick.domElement,padMode) {
+                this.pad = this.joystickElement.appendChild(this.createImage(this.sprites[padMode + ".png"])),
                 this.joystickElement.querySelector("#vjs_dpad").querySelector("svg").style.opacity = "0";
-                var t = this.joystickElement.appendChild(this.createImage(this.sprites["_black_dpad.png"]));
+                var t = this.joystickElement.appendChild(this.createImage(this.sprites["_black_" + padMode + ".png"]));
                 t.style.opacity = "0",
                 t.classList.add("black"),
                 t.style.marginTop = "-2px";
-                var i = this.joystickElement.appendChild(this.createImage(this.sprites["_white_dpad.png"]));
+                var i = this.joystickElement.appendChild(this.createImage(this.sprites["_white_" + padMode + ".png"]));
                 i.style.opacity = "0",
                 i.classList.add("white"),
                 i.style.marginTop = "-2px"
@@ -203,16 +215,15 @@ export class SkinController {
                 s.classList.add("white"),
                 s.style.zIndex = "998"
             }
-            if (this.controller.settings.secondJoystickEnabled)
-                if (this.secondJoystickElement = this.controller.secondVirtualJoystick.domElement,
-                this.controller.settings.secondDpad) {
-                    this.secondDpad = this.secondJoystickElement.appendChild(this.createImage(this.sprites["dpad.png"])),
+            if (secondJoystickEnabled)
+                if (this.secondJoystickElement = this.controller.secondVirtualJoystick.domElement,secondPadMode) {
+                    this.secondPad = this.secondJoystickElement.appendChild(this.createImage(this.sprites[secondPadMode + ".png"])),
                     this.secondJoystickElement.querySelector("#vjs_dpad").querySelector("svg").style.opacity = "0";
-                    var n = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_black_dpad.png"]));
+                    var n = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_black_" + secondPadMode + ".png"]));
                     n.style.opacity = "0",
                     n.classList.add("black"),
                     n.style.marginTop = "-2px";
-                    var a = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_white_dpad.png"]));
+                    var a = this.secondJoystickElement.appendChild(this.createImage(this.sprites["_white_" + secondPadMode + ".png"]));
                     a.style.opacity = "0",
                     a.classList.add("white"),
                     a.style.marginTop = "-2px"
@@ -312,20 +323,21 @@ export class SkinController {
         i
     }
 
-    public updateJoystick(joystickStick: VirtualJoystick, dpad: HTMLImageElement, stick, shadow) {
+    public updateJoystick(joystickStick: VirtualJoystick, pad: HTMLImageElement, padMode: PadMode | undefined, stick, shadow) {
         let difX = joystickStick.difX;
         let difY = joystickStick.difY;
         const radius = joystickStick.radius;
         const length = Math.sqrt(difY * difY + difX * difX);
-        if (dpad) {
-            dpad.src = this.sprites["dpad.png"];
+        if (pad) {
+            pad.src = this.sprites[padMode + ".png"];
             if (0.5 * radius < length) {
-                const h = Math.atan2(difY, difX) + Math.PI / 2;
-                const l = 2 * Math.PI / 8;
+                const numSprites = padConfig[padMode].sprites;
+                const h = Math.atan2(difY, difX) + Math.PI / 2 - padConfig[padMode].offset;
+                const l = 2 * Math.PI / numSprites;
                 let f = Math.round(h / l);
-                f < 0 && (f = 8 + f);
+                f < 0 && (f = numSprites + f);
                 f = Math.abs(f);
-                dpad.src = this.sprites["dpad_" + f + ".png"]
+                pad.src = this.sprites[padMode + "_" + f + ".png"]
             }
         } else {
             if (radius < length) {
@@ -341,7 +353,7 @@ export class SkinController {
     }
 
     public update(): void {
-        this.active && (this.updateJoystick(this.controller.virtualJoystick, this.dpad, this.joystickStick, this.joystickShadow),
-        this.controller.settings.secondJoystickEnabled && this.updateJoystick(this.controller.secondVirtualJoystick, this.secondDpad, this.secondJoystickStick, this.secondJoystickShadow))
+        this.active && (this.updateJoystick(this.controller.virtualJoystick, this.pad, this.controller.settings.padMode, this.joystickStick, this.joystickShadow),
+        this.controller.settings.secondJoystickEnabled && this.updateJoystick(this.controller.secondVirtualJoystick, this.secondPad, this.controller.settings.secondPadMode, this.secondJoystickStick, this.secondJoystickShadow))
     }
 }
