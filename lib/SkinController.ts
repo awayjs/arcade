@@ -271,14 +271,13 @@ export class SkinController {
                 this.buttons.push(sprite);
             }),
             this.controller.settings.gameplayEnable && this.controller.setUIVisibility(false);
+            
+            //init listeners
+            window.addEventListener("resize", (event: UIEvent) => this.resize()),
+            document.addEventListener("keydown", (event: KeyboardEvent) => this.handleKeyDown(event, true));
+            document.addEventListener("keyup", (event: KeyboardEvent) => this.handleKeyDown(event, false));
             this.resize();
-            window.addEventListener("resize", this.resize.bind(this)),
-            document.addEventListener("keydown", (event: KeyboardEvent) => {
-                this.handleKeyDown(event, true)
-            });
-            document.addEventListener("keyup", (event: KeyboardEvent) => {
-                this.handleKeyDown(event, false)
-            });
+
             this.controller.domElement.style.visibility = "visible";
             this.active = true;
         }

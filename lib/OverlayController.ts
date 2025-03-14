@@ -15,7 +15,7 @@ export class OverlayController {
     public secondVirtualJoystick: VirtualJoystick;
     public overlayButtons: VirtualButtons;
 
-    private svgController: SVGController = new SVGController();
+    private svgController: SVGController;
     private skinController: SkinController;
 
     public settings = {
@@ -163,7 +163,7 @@ export class OverlayController {
         if (overlayButtonsEnabled) {
             this.overlayButtons = new VirtualButtons(
                 this.domElement,
-                this.triggerKeyEvent,
+                (type: string, keyCode: number) => {this.triggerKeyEvent(type, keyCode)},
                 {
                     buttons: buttons,
                     buttonSize: buttonSize,
@@ -183,7 +183,7 @@ export class OverlayController {
 
         //update ui and load skin (if available)
         this.update(),
-        skin ? this.loadSkin("./" + skin) : this.svgController.init(this);
+        skin ? this.loadSkin("./" + skin) : this.svgController = new SVGController(this);
         this.settings.gameplayEnable ? this.createAnimations() : this.setUIVisibility(true);
         this.setCSS();
     }
